@@ -1,0 +1,1 @@
+node_modules/.bin/sequelize db:migrate --config ./storage/main/config/config.json --migrations-path ./storage/main/migrations

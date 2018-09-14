@@ -1,0 +1,8 @@
+before_script:
+    - git push heroku master
+
+deploy:
+    script:
+    - git push heroku master
+    only:
+    - master
