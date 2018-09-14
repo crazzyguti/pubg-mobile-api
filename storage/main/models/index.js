@@ -9,7 +9,7 @@ var config    = require('../config/config')[env];
 var db        = {};
 
 if (config.url) {
-  var sequelize = new Sequelize('postgres://eccaqyxglguigu:14ba4b4540f0c518a10cf9d82914ba964a0fe327f2bb3e295b90935b13277bc7@ec2-54-247-123-231.eu-west-1.compute.amazonaws.com:5432/d1a54r924nn2b6', {
+  var sequelize = new Sequelize(config.url, {
   dialectOptions: {
     ssl: true
   },

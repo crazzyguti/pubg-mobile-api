@@ -33,22 +33,22 @@ const sendVerificationEmail = (to, token) => {
     });
     var send = require('gmail-send')({
       //var send = require('../index.js')({
-        user: 'jaydevthomke.in@gmail.com',
-        // user: credentials.user,                  // Your GMail account used to send emails
-        pass: 'mhasozpzyypaxnem',
-        // pass: credentials.pass,                  // Application-specific password
-        to: to,
-        // to:   credentials.user,                  // Send to yourself
-                                                 // you also may set array of recipients:
-                                                 // [ 'user1@gmail.com', 'user2@gmail.com' ]
-        // from:    credentials.user,            // from: by default equals to user
-        // replyTo: credentials.user,            // replyTo: by default undefined
-        // bcc: 'some-user@mail.com',            // almost any option of `nodemailer` will be passed to it
-        subject: 'test subject',
-        // text:    'gmail-send example 1',         // Plain text
-        html: `Click <a href="${hostUrl}/verification?token=${token}&email=${to}">here</a> to verify your email.
-        <p>Please ignore this email if you have not registered to Ads App</p>`            // HTML
-      });
+      user: process.env.ADMIN_EMAIL,
+      // user: credentials.user,                  // Your GMail account used to send emails
+      pass: process.env.ADMIN_EMAIL_KEY,
+      // pass: credentials.pass,                  // Application-specific password
+      to: to,
+      // to:   credentials.user,                  // Send to yourself
+                                                // you also may set array of recipients:
+                                                // [ 'user1@gmail.com', 'user2@gmail.com' ]
+      from:    'pubg-mobile-event@pubgtournaments.in',            // from: by default equals to user
+      // replyTo: credentials.user,            // replyTo: by default undefined
+      // bcc: 'some-user@mail.com',            // almost any option of `nodemailer` will be passed to it
+      subject: 'test subject',
+      // text:    'gmail-send example 1',         // Plain text
+      html: `Click <a href="${hostUrl}/verification?token=${token}&email=${to}">here</a> to verify your email.
+      <p>Please ignore this email if you have not registered to Ads App</p>`            // HTML
+     });
 
     return new Promise(function (resolve, reject) {
       return verifier.verify( to, function( err, info ){

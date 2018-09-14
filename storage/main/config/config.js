@@ -10,7 +10,7 @@ module.exports = {
         dialectOptions: {
           ssl: true
         },
-        url: process.env.DATABASE_URL ? process.env.DATABASE_URL : 'postgres://eccaqyxglguigu:14ba4b4540f0c518a10cf9d82914ba964a0fe327f2bb3e295b90935b13277bc7@ec2-54-247-123-231.eu-west-1.compute.amazonaws.com:5432/d1a54r924nn2b6?ssl=true'
+        url: process.env.DATABASE_URL
     },
     test: {
         username: process.env.PG_USERNAME,
@@ -23,7 +23,7 @@ module.exports = {
         dialectOptions: {
           ssl: true
         },
-        url: process.env.DATABASE_URL ? process.env.DATABASE_URL : 'postgres://eccaqyxglguigu:14ba4b4540f0c518a10cf9d82914ba964a0fe327f2bb3e295b90935b13277bc7@ec2-54-247-123-231.eu-west-1.compute.amazonaws.com:5432/d1a54r924nn2b6'
+        url: process.env.DATABASE_URL
     },
     production: {
         username: process.env.PG_USERNAME,
@@ -36,6 +36,6 @@ module.exports = {
         dialectOptions: {
           ssl: true
         },
-        url: process.env.DATABASE_URL ? process.env.DATABASE_URL : 'postgres://eccaqyxglguigu:14ba4b4540f0c518a10cf9d82914ba964a0fe327f2bb3e295b90935b13277bc7@ec2-54-247-123-231.eu-west-1.compute.amazonaws.com:5432/d1a54r924nn2b6'
+        url: process.env.DATABASE_URL
     }
 };
