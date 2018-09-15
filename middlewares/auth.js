@@ -120,9 +120,9 @@ AuthController.authenticateUser = function(req, res) {
                 if(!user) {
                     return res.status(404).json('Authentication failed!');
                 } else {
-                    if (!user.isVerified) {
-                        return res.status(404).json('Please verify your Email!');
-                    }
+                    // if (!user.isVerified) {
+                    //     return res.status(404).json('Please verify your Email!');
+                    // }
                     comparePasswords(password, user.password, function(error, isMatch) {
                         if(isMatch && !error) {
                             var token = jwt.sign(

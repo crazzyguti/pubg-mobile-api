@@ -20,6 +20,9 @@ module.exports = {
       description: {
         type: Sequelize.STRING
       },
+      rules: {
+        type: Sequelize.ARRAY(Sequelize.STRING)
+      },
       time: {
         type: Sequelize.DATE
       },

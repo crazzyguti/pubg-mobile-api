@@ -19,6 +19,9 @@ module.exports = (sequelize, DataTypes) => {
     description: {
       type: DataTypes.STRING
     },
+    rules: {
+      type: DataTypes.ARRAY(DataTypes.STRING)
+    },
     time: {
       type: DataTypes.DATE
     },
