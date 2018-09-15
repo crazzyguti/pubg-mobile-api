@@ -61,6 +61,7 @@ module.exports = (sequelize, DataTypes) => {
   Matches.associate = function(models) {
     // associations can be defined here
     Matches.belongsTo(models.Users, {foreignKey: 'userId', targetKey: 'id'});
+    Matches.hasMany(models.MatchUsers, {foreignKey: 'userId', targetKey: 'id'});
   };
   return Matches;
 };
