@@ -74,8 +74,87 @@ const deletePlayer = (req, res) => {
   });
 }
 
+const createMatchEntry = (req, res) => {
+  const schema = Joi.object().keys({
+      userId: Joi.number().positive().required(),
+      matchId: Joi.number().positive().required()
+  }).options({
+      stripUnknown: true
+  });
+  return Joi.validate(req.body, schema, function (err, value) {
+      if (err) {
+          return res.status(422).json(err.details[0].message);
+      } else {
+        console.log('req.body', value.matchId);
+        return db.Users.findOne({
+          where: {
+            id : value.userId
+          },
+          raw: true
+        }).then(user => {
+          if (!user) {
+            return res.status(404).json(`User not found`);
+          } else if (!user.isVerified) {
+            return res.status(404).json(`Please verify your account`);
+          } else {
+            const promiseArray = [];
+            // total participants in a match
+            promiseArray.push(db.MatchUsers.count({
+              where: {
+                matchId: value.matchId
+              },
+              raw: true
+            }));
+            // check the user is already present in a math or not
+            promiseArray.push(db.MatchUsers.findAndCountAll({
+              where: {
+                matchId: value.matchId,
+                userId : value.userId
+              },
+              raw: true
+            }));
+            promiseArray.push(db.Matches.findOne({
+              where : {
+                id : value.matchId
+              },
+              raw: true
+            }));
+             Promise.all(promiseArray).then(data => {
+              if (data[0] >= 100) {
+                return res.status(404).json(`Oops, the tournament is full, try another.`);
+              } else if (data[1].count > 0) {
+                return res.status(404).json(`Already Partcicipated`);
+              } else {
+                console.log('in elese');
+                return db.MatchUsers.create({
+                  matchId : value.matchId,
+                  userId : value.userId,
+                  payment : data[2].entryFee,
+                  createdBy : 'test@test.com',
+                  updatedBy : 'test@test.com'
+                }).then((result) => {
+                  return res.status(200).json(`User added succesfully`);
+                }).catch(err => {
+                  console.log(err);
+                  return res.status(500).json('Error while creating user in a match');
+                })
+              }
+            }).catch(err => {
+              console.log(err);
+              return res.status(500).json('Error in promises');
+            })
+          }
+
+        }).catch(reason => {
+          return res.status(500).json('Error while fetching user info');
+        });
+      }
+  });
+}
+
 module.exports = {
   getMatches: getMatches,
   verifypayment: verifypayment,
-  deletePlayer: deletePlayer
+  deletePlayer: deletePlayer,
+  createMatchEntry : createMatchEntry
 };
