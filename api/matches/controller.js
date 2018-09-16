@@ -140,7 +140,7 @@ const createMatchEntry = (req, res) => {
               return res.status(404).json(`Already Partcicipated`);
             } else {
               var payment = new Insta.PaymentData();
-              payment.purpose = `Tournament User: ${req.user.id}, Match: ${value.matchId}`;            // REQUIRED
+              payment.purpose = `Tournament User: ${req.user.email}, Match: ${value.matchId}`;            // REQUIRED
               payment.amount = data[2].entryFee;                  // REQUIRED
               payment.phone = req.user.contact;                  // REQUIRED
               payment.buyer_name = req.user.firstName + ' ' + req.user.lastName;                  // REQUIRED
