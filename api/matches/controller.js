@@ -26,6 +26,7 @@ const getMatches = (req, res) => {
 }
 
 const verifypayment = (req, res) => {
+  console.log(req.query);
   const schema = Joi.object().keys({
     amount: Joi.number().required(),
     buyer: Joi.string().required(),
@@ -43,6 +44,7 @@ const verifypayment = (req, res) => {
   });
   return Joi.validate(req.body, schema, function (err, params) {
     if (err) {
+      console.log(err);
       return res.status(422).json(err.details[0].message);
     } else {
       console.log(req.query);
