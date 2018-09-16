@@ -81,10 +81,8 @@ const deletePlayer = (req, res) => {
 }
 
 const createMatchEntry = (req, res) => {
-  console.log(req.body);
-  
   const schema = Joi.object().keys({
-      userId: Joi.number().positive().required(),
+      userId: Joi.number().positive(),
       matchId: Joi.number().positive().required()
   }).options({
       stripUnknown: true
@@ -93,85 +91,84 @@ const createMatchEntry = (req, res) => {
       if (err) {
           return res.status(422).json(err.details[0].message);
       } else {
-        console.log('req.body', value.matchId);
-          if (!req.user) {
-            return res.status(404).json(`User not found`);
-          } else if (!req.user.isVerified) {
-            return res.status(404).json(`Please verify your account`);
-          } else {
-            const promiseArray = [];
-            // total participants in a match
-            promiseArray.push(db.MatchUsers.count({
-              where: {
-                matchId: value.matchId
-              },
-              raw: true
-            }));
-            // check the user is already present in a math or not
-            promiseArray.push(db.MatchUsers.findAndCountAll({
-              where: {
-                matchId: value.matchId,
-                userId : req.user.id
-              },
-              raw: true
-            }));
-            promiseArray.push(db.Matches.findOne({
-              where : {
-                id : value.matchId
-              },
-              raw: true
-            }));
-             Promise.all(promiseArray).then(data => {
-              if (data[0] >= 100) {
-                return res.status(404).json(`Oops, the tournament is full, try another.`);
-              } else if (data[1].count > 0 && data[1].paymentVerified) {
-                return res.status(404).json(`Already Partcicipated`);
-              } else if (data[1].count > 0 && !data[1].paymentVerified) {
-                return res.status(404).json(`Already Partcicipated`);
-              } else {
-                console.log('in elese');
-                  var data = new Insta.PaymentData();
-                  data.purpose = "Tournament";            // REQUIRED
-                  data.amount = data[2].entryFee;                  // REQUIRED
-                  data.phone = req.user.contact;                  // REQUIRED
-                  data.buyer_name = req.user.firstName + ' ' + req.user.lastName;                  // REQUIRED
-                  // data.redirect_url = 'https://pubg-mobile-api.herokuapp.com/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                  // REQUIRED
-                  // data.send_email = 9;                  // REQUIRED
-                  data.webhook = 'https://pubg-mobile-api.herokuapp.com/matches/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;;                  // REQUIRED
-                  // data.send_sms = 9;                  // REQUIRED
-                  data.email = req.user.email;                  // REQUIRED
-                  data.allow_repeated_payments = false;                  // REQUIRED
-                  data.setRedirectUrl(REDIRECT_URL);
-                  Insta.createPayment(data, function(error, response) {
-                    if (error) {
-                      // some error
-                      console.log(error);
-                    } else {
-                      console.log(response);
-                      return db.MatchUsers.create({
-                        matchId : value.matchId,
-                        userId : req.user.id,
-                        payment : response.payment_request.amount,
-                        paymentRequestId : response.payment_request.id,
-                        createdBy : req.user.email,
-                        updatedBy : req.user.email
-                      }).then((result) => {
-                        return res.status(200).json(response);
-                      }).catch(err => {
-                        console.log(err);
-                        return res.status(500).json('Error while creating user in a match');
-                      })
-                      // Payment redirection link at response.payment_request.longurl
-                    }
-                  });
-                  return res.status(200).json(`User added succesfully`);
-                
-              }
-            }).catch(err => {
-              console.log(err);
-              return res.status(500).json('Error in promises');
-            })
-          }
+        if (!req.user) {
+          return res.status(404).json(`User not found`);
+        } else if (!req.user.isVerified) {
+          return res.status(404).json(`Please verify your account`);
+        } else {
+          const promiseArray = [];
+          // total participants in a match
+          promiseArray.push(db.MatchUsers.count({
+            where: {
+              matchId: value.matchId
+            },
+            raw: true
+          }));
+          // check the user is already present in a math or not
+          promiseArray.push(db.MatchUsers.findAndCountAll({
+            where: {
+              matchId: value.matchId,
+              userId : req.user.id
+            },
+            raw: true
+          }));
+          promiseArray.push(db.Matches.findOne({
+            where : {
+              id : value.matchId
+            },
+            raw: true
+          }));
+            Promise.all(promiseArray).then(data => {
+            if (data[0] >= 100) {
+              return res.status(404).json(`Oops, the tournament is full, try another.`);
+            } else if (data[1].count > 0 && data[1].paymentVerified) {
+              return res.status(404).json(`Already Partcicipated`);
+            } else if (data[1].count > 0 && !data[1].paymentVerified) {
+              return res.status(404).json(`Already Partcicipated`);
+            } else {
+              var payment = new Insta.PaymentData();
+              payment.purpose = "Tournament";            // REQUIRED
+              payment.amount = data[2].entryFee;                  // REQUIRED
+              payment.phone = req.user.contact;                  // REQUIRED
+              payment.buyer_name = req.user.firstName + ' ' + req.user.lastName;                  // REQUIRED
+              // payment.redirect_url = 'https://pubg-mobile-api.herokuapp.com/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                  // REQUIRED
+              // payment.send_email = 9;                  // REQUIRED
+              payment.webhook = 'https://pubg-mobile-api.herokuapp.com/matches/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                 // REQUIRED
+              // payment.send_sms = 9;                  // REQUIRED
+              payment.email = req.user.email;                  // REQUIRED
+              payment.allow_repeated_payments = false;                  // REQUIRED
+              // payment.setRedirectUrl(REDIRECT_URL);
+              Insta.isSandboxMode(true);
+              Insta.createPayment(payment, function(error, response) {
+                if (error) {
+                  // some error
+                  console.log(error);
+                } else {
+                  response = JSON.parse(response);
+                  console.log(response.payment_request.longurl);
+                  
+                  return db.MatchUsers.create({
+                    matchId : value.matchId,
+                    userId : req.user.id,
+                    payment : Number(response.payment_request.amount),
+                    paymentRequestId : response.payment_request.id,
+                    createdBy : req.user.email,
+                    updatedBy : req.user.email
+                  }).then((result) => {
+                    return res.status(200).json(response.payment_request.longurl);
+                  }).catch(err => {
+                    console.log(err);
+                    return res.status(500).json(err);
+                  })
+                  // Payment redirection link at response.payment_request.longurl
+                }
+              });
+            }
+          }).catch(err => {
+            console.log(err);
+            return res.status(500).json('Error in promises');
+          })
+        }
       }
   });
 }
