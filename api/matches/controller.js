@@ -158,21 +158,44 @@ const createMatchEntry = (req, res) => {
                 } else {
                   response = JSON.parse(response);
                   console.log(response.payment_request.longurl);
-                  
-                  return db.MatchUsers.upsert({
-                    matchId : value.matchId,
-                    userId : req.user.id,
-                    payment : Number(response.payment_request.amount),
-                    paymentVerified: false,
-                    paymentRequestId : response.payment_request.id,
-                    paymentId: null,
-                    createdBy : req.user.email,
-                    updatedBy : req.user.email
-                  }).then((result) => {
-                    return res.status(200).json(response.payment_request.longurl);
-                  }).catch(err => {
-                    console.log(err);
-                    return res.status(500).json(err);
+                  return db.MatchUsers.findOne({
+                    where: {
+                      matchId : value.matchId,
+                      userId : req.user.id
+                    } 
+                  }).then(function(obj) {
+                    if (obj) { // update
+                      return obj.update({
+                        payment : Number(response.payment_request.amount),
+                        paymentVerified: false,
+                        paymentRequestId : response.payment_request.id,
+                        paymentId: null,
+                        createdBy : req.user.email,
+                        updatedBy : req.user.email
+                      }).then(() => {
+                        return res.status(200).json(response.payment_request.longurl);
+                      }).catch(err => {
+                        console.log(err);
+                        return res.status(500).json(err);
+                      });
+                    }
+                    else { // insert
+                      return db.MatchUsers.create({
+                        matchId : value.matchId,
+                        userId : req.user.id,
+                        payment : Number(response.payment_request.amount),
+                        paymentVerified: false,
+                        paymentRequestId : response.payment_request.id,
+                        paymentId: null,
+                        createdBy : req.user.email,
+                        updatedBy : req.user.email
+                      }).then(() => {
+                        return res.status(200).json(response.payment_request.longurl);
+                      }).catch(err => {
+                        console.log(err);
+                        return res.status(500).json(err);
+                      });
+                    }
                   });
                   // Payment redirection link at response.payment_request.longurl
                 }

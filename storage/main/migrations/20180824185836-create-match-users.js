@@ -5,17 +5,18 @@ module.exports = {
       id: {
         allowNull: false,
         autoIncrement: true,
-        primaryKey: true,
         type: Sequelize.INTEGER
       },
       userId: {
         allowNull: false,
         type: Sequelize.INTEGER,
+        primaryKey: true,
         references: { model: 'Users', key: 'id' }
       },
       matchId: {
         allowNull: false,
         type: Sequelize.INTEGER,
+        primaryKey: true,
         references: { model: 'Matches', key: 'id' }
       },
       attendance: {
@@ -62,11 +63,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       }
-    }).then(() => {
-      queryInterface.addConstraint('MatchUsers', ['userId', 'matchId'], {
-        type: 'unique',
-        name: 'MatchUsers_unique_user_match'
-      });
     });
   },
   down: (queryInterface, Sequelize) => {
