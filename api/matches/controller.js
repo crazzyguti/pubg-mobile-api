@@ -26,13 +26,18 @@ const getMatches = (req, res) => {
 }
 
 const verifypayment = (req, res) => {
-  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-  
   const schema = Joi.object().keys({
-    matchId: Joi.number().required(),
-    payment: Joi.number().required(),
-    payment_request_id: Joi.string().required(),
-    payment_id: Joi.string().required()
+    amount: Joi.number().required(),
+    buyer: Joi.string().required(),
+    currency: Joi.string().required(),
+    fees: Joi.number().required(),
+    purpose: Joi.string().required(),
+    status: Joi.string().required(),
+    mac: Joi.string().required(),
+    buyer_name: Joi.string().required(),
+    buyer_phone: Joi.string().required(),
+    payment_id: Joi.string().required(),
+    payment_request_id: Joi.string().required()
   }).options({
     stripUnknown: true
   });
@@ -41,7 +46,7 @@ const verifypayment = (req, res) => {
       return res.status(422).json(err.details[0].message);
     } else {
       console.log(req.query);
-      
+      console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       return db.MatchUsers.update({
         userId: req.user.id,
         matchId: req.query.matchId,
