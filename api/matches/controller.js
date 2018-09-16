@@ -133,11 +133,9 @@ const createMatchEntry = (req, res) => {
           }));
             Promise.all(promiseArray).then(data => {
             if (data[0] >= 100) {
-              return res.status(404).json(`Oops, the tournament is full, try another.`);
+              return res.status(404).send('Oops, the tournament is full, try another.');
             } else if (data[1].count > 0 && data[1].paymentVerified) {
-              return res.status(404).json(`Already Partcicipated`);
-            } else if (data[1].count > 0 && !data[1].paymentVerified) {
-              return res.status(404).json(`Already Partcicipated`);
+              return res.status(404).send('Already Partcicipated');
             } else {
               var payment = new Insta.PaymentData();
               payment.purpose = `Tournament User: ${req.user.email}, Match: ${value.matchId}`;            // REQUIRED
@@ -160,11 +158,13 @@ const createMatchEntry = (req, res) => {
                   response = JSON.parse(response);
                   console.log(response.payment_request.longurl);
                   
-                  return db.MatchUsers.create({
+                  return db.MatchUsers.upsert({
                     matchId : value.matchId,
                     userId : req.user.id,
                     payment : Number(response.payment_request.amount),
+                    paymentVerified: false,
                     paymentRequestId : response.payment_request.id,
+                    paymentId: null,
                     createdBy : req.user.email,
                     updatedBy : req.user.email
                   }).then((result) => {
@@ -172,7 +172,7 @@ const createMatchEntry = (req, res) => {
                   }).catch(err => {
                     console.log(err);
                     return res.status(500).json(err);
-                  })
+                  });
                   // Payment redirection link at response.payment_request.longurl
                 }
               });
