@@ -55,7 +55,7 @@ const verifypayment = (req, res) => {
         updatedBy: params.buyer
       }, {
         where: {
-          userId: req.params.id,
+          userId: req.params.userId,
           matchId: req.params.matchId,
           paymentRequestId: params.payment_request_id  
         }
