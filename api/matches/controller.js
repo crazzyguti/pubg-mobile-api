@@ -50,7 +50,7 @@ const verifypayment = (req, res) => {
       console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       return db.MatchUsers.update({
         paymentVerified: true,
-        payment_id: params.payment_id,
+        paymentId: params.payment_id,
         createdBy: params.buyer,
         updatedBy: params.buyer
       }, {
@@ -146,7 +146,7 @@ const createMatchEntry = (req, res) => {
               payment.buyer_name = req.user.firstName + ' ' + req.user.lastName;                  // REQUIRED
               // payment.redirect_url = 'https://pubg-mobile-api.herokuapp.com/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                  // REQUIRED
               // payment.send_email = 9;                  // REQUIRED
-              payment.webhook = 'https://pubg-mobile-api.herokuapp.com/matches/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                 // REQUIRED
+              payment.webhook = `https://pubg-mobile-api.herokuapp.com/matches/varifypayment/${req.user.id}/${value.matchId}`;                 // REQUIRED
               // payment.send_sms = 9;                  // REQUIRED
               payment.email = req.user.email;                  // REQUIRED
               payment.allow_repeated_payments = false;                  // REQUIRED
