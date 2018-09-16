@@ -28,7 +28,9 @@ const getMatches = (req, res) => {
 const verifypayment = (req, res) => {
   const schema = Joi.object().keys({
     matchId: Joi.number().required(),
-    payment: Joi.number().required()
+    payment: Joi.number().required(),
+    payment_request_id: Joi.string().required(),
+    payment_id: Joi.string().required()
   }).options({
     stripUnknown: true
   });
@@ -38,9 +40,9 @@ const verifypayment = (req, res) => {
     } else {
       return db.MatchUsers.update({
         userId: req.user.id,
-        matchId: params.matchId
+        matchId: params.matchId,
+        paymentRequestId: params.payment_request_id
       }, {
-        payment: 100,
         paymentVerified: true,
         createdBy: req.user.email,
         updatedBy: req.user.email
@@ -120,7 +122,9 @@ const createMatchEntry = (req, res) => {
              Promise.all(promiseArray).then(data => {
               if (data[0] >= 100) {
                 return res.status(404).json(`Oops, the tournament is full, try another.`);
-              } else if (data[1].count > 0) {
+              } else if (data[1].count > 0 && data[1].paymentVerified) {
+                return res.status(404).json(`Already Partcicipated`);
+              } else if (data[1].count > 0 && !data[1].paymentVerified) {
                 return res.status(404).json(`Already Partcicipated`);
               } else {
                 console.log('in elese');
@@ -129,9 +133,9 @@ const createMatchEntry = (req, res) => {
                   data.amount = data[2].entryFee;                  // REQUIRED
                   data.phone = req.user.contact;                  // REQUIRED
                   data.buyer_name = req.user.firstName + ' ' + req.user.lastName;                  // REQUIRED
-                  data.redirect_url = 'https://pubg-mobile-api.herokuapp.com/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                  // REQUIRED
+                  // data.redirect_url = 'https://pubg-mobile-api.herokuapp.com/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                  // REQUIRED
                   // data.send_email = 9;                  // REQUIRED
-                  // data.webhook = 9;                  // REQUIRED
+                  data.webhook = 'https://pubg-mobile-api.herokuapp.com/matches/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;;                  // REQUIRED
                   // data.send_sms = 9;                  // REQUIRED
                   data.email = req.user.email;                  // REQUIRED
                   data.allow_repeated_payments = false;                  // REQUIRED
@@ -150,6 +154,7 @@ const createMatchEntry = (req, res) => {
                         createdBy : req.user.email,
                         updatedBy : req.user.email
                       }).then((result) => {
+                        return res.status(200).json(response);
                       }).catch(err => {
                         console.log(err);
                         return res.status(500).json('Error while creating user in a match');
