@@ -39,6 +39,13 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
+      paymentRequestId: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      paymentId: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

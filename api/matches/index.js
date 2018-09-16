@@ -7,6 +7,6 @@ const MatchesController = require('./controller');
 router.get('/matches/listing/',  passport.authenticate('jwt', { session: false }), MatchesController.getMatches);
 router.post('/matches/verifypayment/',  passport.authenticate('jwt', { session: false }), MatchesController.verifypayment);
 router.post('/matches/deletePlayer/',  passport.authenticate('jwt', { session: false }), MatchesController.deletePlayer);
-router.post('/matches/entry/', MatchesController.createMatchEntry);
+router.post('/matches/entry/', passport.authenticate('jwt', { session: false }), MatchesController.createMatchEntry);
 
 module.exports = router;

@@ -1,6 +1,10 @@
 const db = require('../../storage/main/models/index');
 const Joi = require('joi');
+const Insta = require('instamojo-nodejs');
+const API_KEY = process.env.INSTAMOJO_API_KEY_PUBG || 'test_f6dcb6d040f7cdf5fc7884233e8';
+const AUTH_KEY = process.env.INSTAMOJO_AUTH_KEY_PUBG || 'test_f9531e70b8123199e8cc5467d38';
 
+Insta.setKeys(API_KEY, AUTH_KEY);
 
 const getMatches = (req, res) => {
   return db.Matches.findAll({
@@ -86,15 +90,9 @@ const createMatchEntry = (req, res) => {
           return res.status(422).json(err.details[0].message);
       } else {
         console.log('req.body', value.matchId);
-        return db.Users.findOne({
-          where: {
-            id : value.userId
-          },
-          raw: true
-        }).then(user => {
-          if (!user) {
+          if (!req.user) {
             return res.status(404).json(`User not found`);
-          } else if (!user.isVerified) {
+          } else if (!req.user.isVerified) {
             return res.status(404).json(`Please verify your account`);
           } else {
             const promiseArray = [];
@@ -109,7 +107,7 @@ const createMatchEntry = (req, res) => {
             promiseArray.push(db.MatchUsers.findAndCountAll({
               where: {
                 matchId: value.matchId,
-                userId : value.userId
+                userId : req.user.id
               },
               raw: true
             }));
@@ -126,28 +124,47 @@ const createMatchEntry = (req, res) => {
                 return res.status(404).json(`Already Partcicipated`);
               } else {
                 console.log('in elese');
-                return db.MatchUsers.create({
-                  matchId : value.matchId,
-                  userId : value.userId,
-                  payment : data[2].entryFee,
-                  createdBy : 'test@test.com',
-                  updatedBy : 'test@test.com'
-                }).then((result) => {
+                  var data = new Insta.PaymentData();
+                  data.purpose = "Tournament";            // REQUIRED
+                  data.amount = data[2].entryFee;                  // REQUIRED
+                  data.phone = req.user.contact;                  // REQUIRED
+                  data.buyer_name = req.user.firstName + ' ' + req.user.lastName;                  // REQUIRED
+                  data.redirect_url = 'https://pubg-mobile-api.herokuapp.com/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                  // REQUIRED
+                  // data.send_email = 9;                  // REQUIRED
+                  // data.webhook = 9;                  // REQUIRED
+                  // data.send_sms = 9;                  // REQUIRED
+                  data.email = req.user.email;                  // REQUIRED
+                  data.allow_repeated_payments = false;                  // REQUIRED
+                  data.setRedirectUrl(REDIRECT_URL);
+                  Insta.createPayment(data, function(error, response) {
+                    if (error) {
+                      // some error
+                      console.log(error);
+                    } else {
+                      console.log(response);
+                      return db.MatchUsers.create({
+                        matchId : value.matchId,
+                        userId : req.user.id,
+                        payment : response.payment_request.amount,
+                        paymentRequestId : response.payment_request.id,
+                        createdBy : req.user.email,
+                        updatedBy : req.user.email
+                      }).then((result) => {
+                      }).catch(err => {
+                        console.log(err);
+                        return res.status(500).json('Error while creating user in a match');
+                      })
+                      // Payment redirection link at response.payment_request.longurl
+                    }
+                  });
                   return res.status(200).json(`User added succesfully`);
-                }).catch(err => {
-                  console.log(err);
-                  return res.status(500).json('Error while creating user in a match');
-                })
+                
               }
             }).catch(err => {
               console.log(err);
               return res.status(500).json('Error in promises');
             })
           }
-
-        }).catch(reason => {
-          return res.status(500).json('Error while fetching user info');
-        });
       }
   });
 }
