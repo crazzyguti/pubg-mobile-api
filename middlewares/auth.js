@@ -118,7 +118,7 @@ AuthController.authenticateUser = function(req, res) {
 
             return db.Users.findOne(potentialUser).then(function(user) {
                 if(!user) {
-                    return res.status(404).json('Authentication failed!');
+                    return res.status(404).json('Invalid User failed!');
                 } else {
                     // if (!user.isVerified) {
                     //     return res.status(404).json('Please verify your Email!');
@@ -136,7 +136,7 @@ AuthController.authenticateUser = function(req, res) {
                                 role: user.role
                             });
                         } else {
-                            return res.status(404).json('Login failed!');
+                            return res.status(404).json('Invalid Password!');
                         }
                     });
                 }

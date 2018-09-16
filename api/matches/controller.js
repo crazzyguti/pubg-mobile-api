@@ -81,6 +81,8 @@ const deletePlayer = (req, res) => {
 }
 
 const createMatchEntry = (req, res) => {
+  console.log(req.body);
+  
   const schema = Joi.object().keys({
       userId: Joi.number().positive().required(),
       matchId: Joi.number().positive().required()
