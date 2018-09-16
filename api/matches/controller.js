@@ -49,14 +49,16 @@ const verifypayment = (req, res) => {
       console.log(req.params);
       console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       return db.MatchUsers.update({
-        userId: req.params.id,
-        matchId: req.params.matchId,
-        paymentRequestId: params.payment_request_id
-      }, {
         paymentVerified: true,
         payment_id: params.payment_id,
         createdBy: params.buyer,
         updatedBy: params.buyer
+      }, {
+        where: {
+          userId: req.params.id,
+          matchId: req.params.matchId,
+          paymentRequestId: params.payment_request_id  
+        }
       }).then(data => {
         return res.status(200).json(data);
       }).catch(reason => {
