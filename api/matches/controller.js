@@ -26,6 +26,8 @@ const getMatches = (req, res) => {
 }
 
 const verifypayment = (req, res) => {
+  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+  
   const schema = Joi.object().keys({
     matchId: Joi.number().required(),
     payment: Joi.number().required(),
@@ -38,9 +40,11 @@ const verifypayment = (req, res) => {
     if (err) {
       return res.status(422).json(err.details[0].message);
     } else {
+      console.log(req.query);
+      
       return db.MatchUsers.update({
         userId: req.user.id,
-        matchId: params.matchId,
+        matchId: req.query.matchId,
         paymentRequestId: params.payment_request_id
       }, {
         paymentVerified: true,
