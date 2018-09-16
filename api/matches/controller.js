@@ -118,7 +118,7 @@ const createMatchEntry = (req, res) => {
             raw: true
           }));
           // check the user is already present in a math or not
-          promiseArray.push(db.MatchUsers.findAndCountAll({
+          promiseArray.push(db.MatchUsers.findOne({
             where: {
               matchId: value.matchId,
               userId : req.user.id
@@ -132,9 +132,10 @@ const createMatchEntry = (req, res) => {
             raw: true
           }));
             Promise.all(promiseArray).then(data => {
+              console.log(data[1]);
             if (data[0] >= 100) {
               return res.status(404).send('Oops, the tournament is full, try another.');
-            } else if (data[1].count > 0 && data[1].paymentVerified) {
+            } else if (data[1] && data[1].paymentVerified) {
               return res.status(404).send('Already Partcicipated');
             } else {
               var payment = new Insta.PaymentData();
