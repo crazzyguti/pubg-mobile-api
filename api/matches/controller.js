@@ -168,7 +168,7 @@ const createMatchEntry = (req, res) => {
                     createdBy : req.user.email,
                     updatedBy : req.user.email
                   }).then((result) => {
-                    return res.status(200).json(response.payment_request.longurl);
+                    return res.status(200).send(response.payment_request.longurl);
                   }).catch(err => {
                     console.log(err);
                     return res.status(500).json(err);
