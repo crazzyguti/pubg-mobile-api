@@ -50,7 +50,7 @@ const verifypayment = (req, res) => {
     if (err) {
       console.log(err);
       return res.status(422).json(err.details[0].message);
-    } else {
+    } else if (params.status === 'Credit') {
       console.log(req.params);
       console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       return db.MatchUsers.update({
