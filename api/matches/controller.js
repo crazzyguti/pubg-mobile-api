@@ -9,7 +9,12 @@ Insta.setKeys(API_KEY, AUTH_KEY);
 const getMatches = (req, res) => {
   return db.Matches.findAll({
     include: [{
-      model: db.Users
+      model: db.Users,
+      attributes: ['id', 'email', 'contact'],
+      where: {
+        isActive: true,
+        isVerified: true
+      }
     }, {
       model: db.MatchUsers,
       where: {
