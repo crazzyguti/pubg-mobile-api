@@ -54,7 +54,7 @@ const verifypayment = (req, res) => {
   return Joi.validate(req.body, schema, function (err, params) {
     if (err) {
       console.log(err);
-      return res.status(422).json(err.details[0].message);
+      return res.status(200).json(err.details[0].message);
     } else if (params.status === 'Credit') {
       console.log(req.params);
       console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
