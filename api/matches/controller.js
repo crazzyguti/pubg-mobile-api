@@ -6,7 +6,7 @@ const MERCHANT_SALT = process.env.PAYUMONEY_MERCHANT_SALT_PUBG || 'Gnkh3uQ976';
 const AUTHORIZATION_HEADER = process.env.PAYUMONEY_AUTHORIZATION_HEADER_PUBG || 'z7EEmRmAE5y/jLCfO2AJIWIsAdu7XMLXE9VuHdBBJqY=';
 
 payumoney.setKeys(MERCHANT_KEY, MERCHANT_SALT, AUTHORIZATION_HEADER);
-payumoney.isProdMode(false);
+payumoney.isProdMode(true);
 
 const getMatches = (req, res) => {
   return db.Matches.findAll({
@@ -34,7 +34,7 @@ const getMatches = (req, res) => {
 
 const verifypayment = (req, res) => {
   console.log('???????????????????????????????????????????');
-  console.log(req.body);
+  console.log(JSON.stringify(JSON.parse(req)));
   
   const schema = Joi.object().keys({
     // amount: Joi.number().required(),
@@ -151,7 +151,7 @@ const createMatchEntry = (req, res) => {
             } else {
               const paymentData = {
                 productinfo: `Tournament User: ${req.user.email}, Match: ${value.matchId}`,
-                txnid: req.user.id + value.matchId,
+                txnid: req.user.id + '-' + value.matchId,
                 amount: data[2].entryFee,
                 email: req.user.email,
                 phone: req.user.contact,
@@ -159,8 +159,8 @@ const createMatchEntry = (req, res) => {
                 firstname: req.user.firstName,
                 sendEmail: true,
                 modes: 'all',
-                surl: 'http://localhost:8100/#/cards', //"http://localhost:3000/payu/success"
-                furl: 'http://localhost:8100/#/cards', //"http://localhost:3000/payu/fail"
+                surl: 'www.payumoney.com/success/' + req.user.id + '-' + value.matchId, //"http://localhost:3000/payu/success"
+                furl: 'www.payumoney.com/failure/' + req.user.id + '-' + value.matchId //"http://localhost:3000/payu/fail"
               };
 
               payumoney.makePayment(paymentData, function(error, response) {
