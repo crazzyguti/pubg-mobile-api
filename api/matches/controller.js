@@ -20,7 +20,8 @@ const getMatches = (req, res) => {
     }, {
       model: db.MatchUsers,
       where: {
-        userId: req.user.id
+        userId: req.user.id,
+        '': db.sequelize.literal('"MatchUsers"."matchId" = "Matches"."id"')
       },
       required: false
     }]
