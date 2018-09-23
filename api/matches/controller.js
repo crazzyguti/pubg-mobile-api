@@ -34,7 +34,9 @@ const getMatches = (req, res) => {
 
 const verifypayment = (req, res) => {
   console.log('???????????????????????????????????????????');
+  console.log(req.body);
   console.log(req);
+  
   
   const schema = Joi.object().keys({
     // amount: Joi.number().required(),
@@ -159,8 +161,8 @@ const createMatchEntry = (req, res) => {
                 firstname: req.user.firstName,
                 sendEmail: true,
                 modes: 'all',
-                surl: 'www.payumoney.com/success/' + req.user.id + '-' + value.matchId, //"http://localhost:3000/payu/success"
-                furl: 'www.payumoney.com/failure/' + req.user.id + '-' + value.matchId //"http://localhost:3000/payu/fail"
+                surl: 'https://payumoney.com/success/' + req.user.id + '-' + value.matchId, //"http://localhost:3000/payu/success"
+                furl: 'https://payumoney.com/failure/' + req.user.id + '-' + value.matchId //"http://localhost:3000/payu/fail"
               };
 
               payumoney.makePayment(paymentData, function(error, response) {
