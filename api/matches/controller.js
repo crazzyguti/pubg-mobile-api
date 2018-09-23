@@ -32,7 +32,7 @@ const getMatches = (req, res) => {
   });
 }
 
-const verifypayment = (req, res) => {
+const paymentSuccess = (req, res) => {
   const schema = Joi.object().keys({
     paymentId: Joi.string().required(),
     customerEmail: Joi.string().required(),
@@ -43,8 +43,8 @@ const verifypayment = (req, res) => {
   return Joi.validate(req.body, schema, function (err, params) {
     if (err) {
       console.log(err);
-      return res.status(200).json(err.details[0].message);
-    } else if (params.status === 'Credit') {
+      return res.status(422).json(err.details[0].message);
+    } else {
       return db.MatchUsers.update({
         paymentVerified: true,
         paymentId: params.paymentId,
@@ -206,7 +206,7 @@ const createMatchEntry = (req, res) => {
 
 module.exports = {
   getMatches: getMatches,
-  verifypayment: verifypayment,
+  paymentSuccess: paymentSuccess,
   deletePlayer: deletePlayer,
   createMatchEntry : createMatchEntry
 };
