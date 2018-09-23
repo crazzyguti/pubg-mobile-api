@@ -1,10 +1,12 @@
 const db = require('../../storage/main/models/index');
 const Joi = require('joi');
-const Insta = require('instamojo-nodejs');
-const API_KEY = process.env.INSTAMOJO_API_KEY_PUBG || 'test_f6dcb6d040f7cdf5fc7884233e8';
-const AUTH_KEY = process.env.INSTAMOJO_AUTH_KEY_PUBG || 'test_f9531e70b8123199e8cc5467d38';
+const payumoney = require('payumoney-node');
+const MERCHANT_KEY = process.env.PAYUMONEY_MERCHANT_KEY_PUBG || 'dK0uoDM5';
+const MERCHANT_SALT = process.env.PAYUMONEY_MERCHANT_SALT_PUBG || 'Gnkh3uQ976';
+const AUTHORIZATION_HEADER = process.env.PAYUMONEY_AUTHORIZATION_HEADER_PUBG || 'z7EEmRmAE5y/jLCfO2AJIWIsAdu7XMLXE9VuHdBBJqY=';
 
-Insta.setKeys(API_KEY, AUTH_KEY);
+payumoney.setKeys(MERCHANT_KEY, MERCHANT_SALT, AUTHORIZATION_HEADER);
+payumoney.isProdMode(false);
 
 const getMatches = (req, res) => {
   return db.Matches.findAll({
@@ -31,6 +33,9 @@ const getMatches = (req, res) => {
 }
 
 const verifypayment = (req, res) => {
+  console.log('???????????????????????????????????????????');
+  console.log(req);
+  
   const schema = Joi.object().keys({
     amount: Joi.number().required(),
     buyer: Joi.string().required(),
@@ -41,8 +46,8 @@ const verifypayment = (req, res) => {
     mac: Joi.string().required(),
     buyer_name: Joi.string().required(),
     buyer_phone: Joi.string().required(),
-    payment_id: Joi.string().required(),
-    payment_request_id: Joi.string().required()
+    paymentId: Joi.string().required(),
+    merchantTransactionId: Joi.number().required()
   }).options({
     stripUnknown: true
   });
@@ -143,26 +148,27 @@ const createMatchEntry = (req, res) => {
             } else if (data[1] && data[1].paymentVerified) {
               return res.status(404).send('Already Partcicipated');
             } else {
-              var payment = new Insta.PaymentData();
-              payment.purpose = `Tournament User: ${req.user.email}, Match: ${value.matchId}`;            // REQUIRED
-              payment.amount = data[2].entryFee;                  // REQUIRED
-              payment.phone = req.user.contact;                  // REQUIRED
-              payment.buyer_name = req.user.firstName + ' ' + req.user.lastName;                  // REQUIRED
-              // payment.redirect_url = 'https://pubg-mobile-api.herokuapp.com/varifypayment?userId=' + req.user.id + '&matchId=' + value.matchId;                  // REQUIRED
-              // payment.send_email = 9;                  // REQUIRED
-              payment.webhook = `https://pubg-mobile-api.herokuapp.com/matches/verifypayment/${req.user.id}/${value.matchId}`;                 // REQUIRED
-              // payment.send_sms = 9;                  // REQUIRED
-              payment.email = req.user.email;                  // REQUIRED
-              payment.allow_repeated_payments = false;                  // REQUIRED
-              // payment.setRedirectUrl(REDIRECT_URL);
-              Insta.isSandboxMode(true);
-              Insta.createPayment(payment, function(error, response) {
+              const paymentData = {
+                productinfo: `Tournament User: ${req.user.email}, Match: ${value.matchId}`,
+                txnid: req.user.id + value.matchId,
+                amount: data[2].entryFee,
+                email: req.user.email,
+                phone: req.user.contact,
+                lastname: req.user.lastName,
+                firstname: req.user.firstName,
+                sendEmail: true,
+                modes: 'all',
+                surl: 'http://localhost:8100/#/cards', //"http://localhost:3000/payu/success"
+                furl: 'http://localhost:8100/#/cards', //"http://localhost:3000/payu/fail"
+              };
+
+              payumoney.makePayment(paymentData, function(error, response) {
                 if (error) {
-                  // some error
-                  console.log(error);
+                  // Some error
                 } else {
-                  response = JSON.parse(response);
-                  console.log(response.payment_request.longurl);
+                  // Payment redirection link
+                  console.log('/////////////////////////////////');
+                  console.log(response);
                   return db.MatchUsers.findOne({
                     where: {
                       matchId : value.matchId,
@@ -171,38 +177,36 @@ const createMatchEntry = (req, res) => {
                   }).then(function(obj) {
                     if (obj) { // update
                       return obj.update({
-                        payment : Number(response.payment_request.amount),
+                        payment : Number(data[2].entryFee),
                         paymentVerified: false,
-                        paymentRequestId : response.payment_request.id,
+                        paymentRequestId : req.user.id + value.matchId,
                         paymentId: null,
                         createdBy : req.user.email,
                         updatedBy : req.user.email
                       }).then(() => {
-                        return res.status(200).json(response.payment_request.longurl);
+                        return res.status(200).json(response);
                       }).catch(err => {
                         console.log(err);
                         return res.status(500).json(err);
                       });
-                    }
-                    else { // insert
+                    } else { // insert
                       return db.MatchUsers.create({
                         matchId : value.matchId,
                         userId : req.user.id,
-                        payment : Number(response.payment_request.amount),
+                        payment : Number(data[2].entryFee),
                         paymentVerified: false,
-                        paymentRequestId : response.payment_request.id,
+                        paymentRequestId : req.user.id + value.matchId,
                         paymentId: null,
                         createdBy : req.user.email,
                         updatedBy : req.user.email
                       }).then(() => {
-                        return res.status(200).json(response.payment_request.longurl);
+                        return res.status(200).json(response);
                       }).catch(err => {
                         console.log(err);
                         return res.status(500).json(err);
                       });
                     }
                   });
-                  // Payment redirection link at response.payment_request.longurl
                 }
               });
             }
