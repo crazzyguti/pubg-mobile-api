@@ -6,7 +6,7 @@ const MERCHANT_SALT = process.env.PAYUMONEY_MERCHANT_SALT_PUBG || 'Gnkh3uQ976';
 const AUTHORIZATION_HEADER = process.env.PAYUMONEY_AUTHORIZATION_HEADER_PUBG || 'z7EEmRmAE5y/jLCfO2AJIWIsAdu7XMLXE9VuHdBBJqY=';
 
 payumoney.setKeys(MERCHANT_KEY, MERCHANT_SALT, AUTHORIZATION_HEADER);
-payumoney.isProdMode(false);
+payumoney.isProdMode(true);
 
 const getMatches = (req, res) => {
   return db.Matches.findAll({
@@ -33,21 +33,7 @@ const getMatches = (req, res) => {
 }
 
 const verifypayment = (req, res) => {
-  console.log('???????????????????????????????????????????');
-  console.log(req.body);
-  console.log(req);
-  
-  
   const schema = Joi.object().keys({
-    // amount: Joi.number().required(),
-    // buyer: Joi.string().required(),
-    // currency: Joi.string().required(),
-    // fees: Joi.number().required(),
-    // purpose: Joi.string().required(),
-    // status: Joi.string().required(),
-    // mac: Joi.string().required(),
-    // buyer_name: Joi.string().required(),
-    // buyer_phone: Joi.string().required(),
     paymentId: Joi.string().required(),
     customerEmail: Joi.string().required(),
     merchantTransactionId: Joi.string().required()
@@ -59,8 +45,6 @@ const verifypayment = (req, res) => {
       console.log(err);
       return res.status(200).json(err.details[0].message);
     } else if (params.status === 'Credit') {
-      console.log(req.params);
-      console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       return db.MatchUsers.update({
         paymentVerified: true,
         paymentId: params.paymentId,
@@ -68,8 +52,6 @@ const verifypayment = (req, res) => {
         updatedBy: params.customerEmail
       }, {
         where: {
-          userId: req.params.userId,
-          matchId: req.params.matchId,
           paymentRequestId: params.merchantTransactionId  
         }
       }).then(data => {
