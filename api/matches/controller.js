@@ -37,17 +37,18 @@ const verifypayment = (req, res) => {
   console.log(req.body);
   
   const schema = Joi.object().keys({
-    amount: Joi.number().required(),
-    buyer: Joi.string().required(),
-    currency: Joi.string().required(),
-    fees: Joi.number().required(),
-    purpose: Joi.string().required(),
-    status: Joi.string().required(),
-    mac: Joi.string().required(),
-    buyer_name: Joi.string().required(),
-    buyer_phone: Joi.string().required(),
+    // amount: Joi.number().required(),
+    // buyer: Joi.string().required(),
+    // currency: Joi.string().required(),
+    // fees: Joi.number().required(),
+    // purpose: Joi.string().required(),
+    // status: Joi.string().required(),
+    // mac: Joi.string().required(),
+    // buyer_name: Joi.string().required(),
+    // buyer_phone: Joi.string().required(),
     paymentId: Joi.string().required(),
-    merchantTransactionId: Joi.number().required()
+    customerEmail: Joi.string().required(),
+    merchantTransactionId: Joi.string().required()
   }).options({
     stripUnknown: true
   });
@@ -60,14 +61,14 @@ const verifypayment = (req, res) => {
       console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       return db.MatchUsers.update({
         paymentVerified: true,
-        paymentId: params.payment_id,
-        createdBy: params.buyer,
-        updatedBy: params.buyer
+        paymentId: params.paymentId,
+        createdBy: params.customerEmail,
+        updatedBy: params.customerEmail
       }, {
         where: {
           userId: req.params.userId,
           matchId: req.params.matchId,
-          paymentRequestId: params.payment_request_id  
+          paymentRequestId: params.merchantTransactionId  
         }
       }).then(data => {
         return res.status(200).json(data);
@@ -179,7 +180,7 @@ const createMatchEntry = (req, res) => {
                       return obj.update({
                         payment : Number(data[2].entryFee),
                         paymentVerified: false,
-                        paymentRequestId : req.user.id + value.matchId,
+                        paymentRequestId : req.user.id + '-' + value.matchId,
                         paymentId: null,
                         createdBy : req.user.email,
                         updatedBy : req.user.email
@@ -195,7 +196,7 @@ const createMatchEntry = (req, res) => {
                         userId : req.user.id,
                         payment : Number(data[2].entryFee),
                         paymentVerified: false,
-                        paymentRequestId : req.user.id + value.matchId,
+                        paymentRequestId : req.user.id + '-' + value.matchId,
                         paymentId: null,
                         createdBy : req.user.email,
                         updatedBy : req.user.email
