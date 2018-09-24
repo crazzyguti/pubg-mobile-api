@@ -73,6 +73,7 @@ module.exports = (sequelize, DataTypes) => {
   Users.associate = function(models) {
     // associations can be defined hered
     Users.hasMany(models.Matches, {foreignKey: 'userId', sourceKey: 'id'});
+    Users.hasMany(models.MatchUsers, {foreignKey: 'userId', sourceKey: 'id'});
     Users.hasOne(models.VerificationToken, {
       as: 'verificationtoken',
       foreignKey: 'userId',
