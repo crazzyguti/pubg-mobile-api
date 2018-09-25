@@ -153,8 +153,6 @@ const createMatchEntry = (req, res) => {
                   // Some error
                 } else {
                   // Payment redirection link
-                  console.log('/////////////////////////////////');
-                  console.log(response);
                   return db.MatchUsers.findOne({
                     where: {
                       matchId : value.matchId,

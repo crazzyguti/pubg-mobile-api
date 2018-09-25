@@ -24,7 +24,9 @@ AuthController.signUp = function(req, res) {
         email: Joi.string().email({ minDomainAtoms: 2 }).required(),
         password: Joi.string().regex(/^[a-zA-Z0-9]{3,30}$/).required(),
         firstName: Joi.string().required(),
-        lastName: Joi.string().required()
+        lastName: Joi.string().required(),
+        contact: Joi.string().required(),
+        payTM: Joi.string()
     }).options({
         stripUnknown: true
     });
@@ -34,21 +36,23 @@ AuthController.signUp = function(req, res) {
             return res.status(422).json(err.details[0].message);
         } else {
             const newUser = {
-                email: req.body.email,
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                createdBy: req.body.email,
-                updatedBy: req.body.email,
+                email: value.email,
+                firstName: value.firstName,
+                lastName: value.lastName,
+                contact: value.contact,
+                payTM: value.payTM,
+                createdBy: value.email,
+                updatedBy: value.email
             };
             if (process.env.NODE_ENV === 'development') {
-                newUser.password = bcrypt.hashSync(req.body.password);
+                newUser.password = bcrypt.hashSync(value.password);
             } else {
-                newUser.password = bcrypt.hashSync(req.body.password, salt);
+                newUser.password = bcrypt.hashSync(value.password, salt);
             }
             // Attempt to save the user
             return db.sequelize.transaction().then((t) => {
                 return db.Users.findOrCreate({
-                    where: { email:  req.body.email },
+                    where: { email:  value.email },
                     defaults: newUser,
                     transaction: t
                 }).spread((user, created) => {
@@ -60,20 +64,24 @@ AuthController.signUp = function(req, res) {
                             userId: user.id,
                             token: crypto(16)
                         }, { transaction: t }).then((result) => {
-                            return sendVerificationEmail(req.body.email, result.token).then(() => {
+                            return sendVerificationEmail.sendVerificationEmail(value.email, result.token).then(() => {
                                 return t.commit().then(() => {
                                     return res.status(200).json({
                                         success: true,
-                                        message: `${req.body.email} account created successfully`,
+                                        message: `${value.email} account created successfully`,
                                         email: user.email
                                     });
                                 });
                             }).catch((err) => {
+                                console.log(err);
+                                
                                 return t.rollback().then(() => {
                                     return res.status(500).json(err);
                                 });
                             });
                         }).catch((error) => {
+                            console.log(error);
+                            
                             return t.rollback().then(() => {
                                 return res.status(500).json(error);
                             });
