@@ -1,7 +1,6 @@
 const db = require('../../storage/main/models/index');
 const Joi = require('joi');
 const sequelize = require('sequelize');
-const Insta = require('instamojo-nodejs');
 // const API_KEY = process.env.INSTAMOJO_API_KEY_PUBG || 'test_f6dcb6d040f7cdf5fc7884233e8';
 // const AUTH_KEY = process.env.INSTAMOJO_AUTH_KEY_PUBG || 'test_f9531e70b8123199e8cc5467d38';
 //
