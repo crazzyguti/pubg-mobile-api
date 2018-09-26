@@ -7,5 +7,6 @@ router.use('/verification', require('./verification'))
 router.use('/', require('./sendverificationmail'))
 router.use('/', require('./matches'))
 router.use('/', require('./player'))
+router.use('/', require('./matchNotification'))
 
 module.exports = router

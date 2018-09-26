@@ -53,13 +53,55 @@ const paymentSuccess = (req, res) => {
         updatedBy: params.customerEmail
       }, {
         where: {
-          paymentRequestId: params.merchantTransactionId  
+          paymentRequestId: params.merchantTransactionId
         }
       }).then(data => {
         return res.status(200).json(data);
       }).catch(reason => {
         console.log(reason);
         return res.status(404).json(`Payment Verification Failed`);
+      });
+    }
+  });
+}
+
+const getMatchInfo = (req, res) => {
+  const schema = Joi.object().keys({
+    id: Joi.number().required()
+  }).options({
+    stripUnknown: true
+  });
+  return Joi.validate(req.params, schema, function (err, params) {
+    if (err) {
+      console.log(err);
+      return res.status(422).json(err.details[0].message);
+    } else {
+      return db.Matches.findOne({
+        where: {
+          id: params.id
+        },
+        attributes : ['title', 'description', 'rules', 'time', 'entryFee', 'roomId', 'roomPassword', 'createdAt'],
+        include : [{
+          model : db.MatchUsers,
+          attributes : ['userId'],
+          where : {
+            paymentVerified : true
+          },
+          required : false,
+          include : [{
+            model : db.Users,
+            attributes : ['id', 'email', 'contact', 'payTM']
+          }]
+        }]
+      }).then(data => {
+        if (!data) {
+          return res.status(401).json(`No Match found`);
+        } else {
+          return res.status(200).json(data);
+        }
+      }).catch(reason => {
+        console.log(reason);
+        return res.status(404).json(`Error while getting match Info`);
       });
     }
   });
@@ -153,11 +195,13 @@ const createMatchEntry = (req, res) => {
                   // Some error
                 } else {
                   // Payment redirection link
+                  console.log('/////////////////////////////////');
+                  console.log(response);
                   return db.MatchUsers.findOne({
                     where: {
                       matchId : value.matchId,
                       userId : req.user.id
-                    } 
+                    }
                   }).then(function(obj) {
                     if (obj) { // update
                       return obj.update({
@@ -203,9 +247,52 @@ const createMatchEntry = (req, res) => {
   });
 }
 
+const getMatchInfo = (req, res) => {
+  const schema = Joi.object().keys({
+    id: Joi.number().required()
+  }).options({
+    stripUnknown: true
+  });
+  return Joi.validate(req.params, schema, function (err, params) {
+    if (err) {
+      console.log(err);
+      return res.status(422).json(err.details[0].message);
+    } else {
+      return db.Matches.findOne({
+        where: {
+          id: params.id
+        },
+        attributes : ['title', 'description', 'rules', 'time', 'entryFee', 'roomId', 'roomPassword', 'createdAt'],
+        include : [{
+          model : db.MatchUsers,
+          attributes : ['userId'],
+          where : {
+            paymentVerified : true
+          },
+          required : false,
+          include : [{
+            model : db.Users,
+            attributes : ['id', 'email', 'contact', 'payTM']
+          }]
+        }]
+      }).then(data => {
+        if (!data) {
+          return res.status(401).json(`No Match found`);
+        } else {
+          return res.status(200).json(data);
+        }
+      }).catch(reason => {
+        console.log(reason);
+        return res.status(404).json(`Error while getting match Info`);
+      });
+    }
+  });
+}
+
 module.exports = {
   getMatches: getMatches,
   paymentSuccess: paymentSuccess,
   deletePlayer: deletePlayer,
-  createMatchEntry : createMatchEntry
+  createMatchEntry : createMatchEntry,
+  getMatchInfo : getMatchInfo
 };
