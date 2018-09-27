@@ -13,6 +13,6 @@ router.get('/matches/listing/', passport.authenticate('jwt', { session: false })
 router.post('/matches/paymentsuccess/', customParser, MatchesController.paymentSuccess);
 router.post('/matches/deletePlayer/', passport.authenticate('jwt', { session: false }), MatchesController.deletePlayer);
 router.post('/matches/entry/', passport.authenticate('jwt', { session: false }), MatchesController.createMatchEntry);
-router.get('/matches/info/:id', passport.authenticate('jwt', { session: false }), MatchesController.createMatchEntry);
+router.get('/matches/info/:id', passport.authenticate('jwt', { session: false }), MatchesController.getMatchInfo);
 // router.get('/matches/info/:id', MatchesController.getMatchInfo);
 module.exports = router;

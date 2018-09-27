@@ -65,7 +65,7 @@ const paymentSuccess = (req, res) => {
   });
 }
 
-const getMatchInfo = (req, res) => {
+const getMatchUsers = (req, res) => {
   const schema = Joi.object().keys({
     id: Joi.number().required()
   }).options({
