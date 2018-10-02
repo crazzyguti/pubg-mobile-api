@@ -1,6 +1,7 @@
 const db = require('../../storage/main/models/index');
 const Joi = require('joi');
 const payumoney = require('payumoney-node');
+const _ = require('lodash');
 const MERCHANT_KEY = process.env.PAYUMONEY_MERCHANT_KEY_PUBG || 'dK0uoDM5';
 const MERCHANT_SALT = process.env.PAYUMONEY_MERCHANT_SALT_PUBG || 'Gnkh3uQ976';
 const AUTHORIZATION_HEADER = process.env.PAYUMONEY_AUTHORIZATION_HEADER_PUBG || 'z7EEmRmAE5y/jLCfO2AJIWIsAdu7XMLXE9VuHdBBJqY=';
@@ -202,7 +203,13 @@ const createMatchEntry = (req, res) => {
                 } else {
                   // Payment redirection link
                   console.log('/////////////////////////////////');
-                  response = JSON.stringify(response)
+                  // response = JSON.stringify(response)
+                  console.log(response);
+
+                  // response.CHECKSUMHASH = encode(response.CHECKSUMHASH);
+                  // response.WEBSITE = encode(response.WEBSITE);
+                  // console.log(response);
+
                   return db.MatchUsers.findOne({
                     where: {
                       matchId : value.matchId,
@@ -218,9 +225,9 @@ const createMatchEntry = (req, res) => {
                         createdBy : req.user.email,
                         updatedBy : req.user.email
                       }).then(() => {
-                        const uri = 'https://pguat.paytm.com/oltp-web/processTransaction?' + generateParams(response);
-                        console.log(uri);
-                        return res.status(200).json(uri);
+                        // const uri = generateParams(response);
+                        // console.log(uri);
+                        return res.status(200).json(response);
                       }).catch(err => {
                         console.log(err);
                         return res.status(500).json(err);
@@ -255,14 +262,22 @@ const createMatchEntry = (req, res) => {
   });
 }
 
-const generateParams = (str) => {
+const generateParams = (params) => {
+  let str = 'https://pguat.paytm.com/oltp-web/processTransaction?'
+  const parameters = [];
+  _.forEach(params, (value, key) => {
+    parameters.push(key + '=' + value);
+  })
+  str += parameters.join('&');
+  return str;
+};
+
+const encode = (str) => {
   return String(str)
-          .replace(/{/g, '')
-          .replace(/}/g, '')
-          .replace(/'/g, '')
-          .replace(/"/g, '')
-          .replace(/,/g, '&')
-          .replace(/:/g, '=');
+  .replace(/\//g, '%2F')
+  .replace(/\+/g, '%2B')
+  .replace(/=/g, '%3D')
+  .replace(/:/g, '%3A');
 };
 
 const getMatchInfo = (req, res) => {
